@@ -23,9 +23,6 @@ import java.util.Random;
 public class A_star {
 
     private static final double INFINITY = Double.POSITIVE_INFINITY;
-    public GameObject[][] arena;
-
-    List<A_Star_Node> desti;
 
     int blockCounter;
 
@@ -71,15 +68,17 @@ public class A_star {
 
                 //===========Run in direction 'dir'===========
                 
-                /*
-                temp = run(current, dir);
+                
+                temp = run(current, dir, arena);
                 if(checked.contains(temp)){
                     continue;
                 }
                 temp.setPrevious(current);
                 temp.setCostToArrive(current.getCostToArrive() + 1);
                 temp.setCostToDest(temp.distanceTo(dest));
-                */
+
+                queue.add(temp);
+                
             }
             blockCounter++;
         }
@@ -88,11 +87,10 @@ public class A_star {
 
     public int reconstructPath(A_Star_Node start, A_Star_Node current) {
         A_Star_Node previous = current;
-        System.out.println("dest: " + current.toString());
+        //System.out.println("dest: " + current.toString());
         try {
-            //while (previous.getPrevious().equals(start)) {
-            while(start.distanceTo(previous) != 1){
-                System.out.println("path: " + previous.toString());
+            while (!previous.getPrevious().equals(start)) {
+                //System.out.println("path: " + previous.toString());
                 previous = previous.getPrevious();
             }
         } catch (NullPointerException n) {
@@ -100,15 +98,14 @@ public class A_star {
             System.out.println("previous: " + previous.toString());
         }
         //System.out.println("trying to move to: " + previous.toString());
-        /*if(start.distanceTo(previous) > 1){
+        if(start.distanceTo(previous) > 1){
             return start.getDirectionToward(previous) + 1000; // runs in the specified direction
-        }*/
+        }
         return start.getDirectionToward(previous);
     }
     
-    public A_Star_Node run(A_Star_Node start, int dir){
-        
-        for(int i = 0; canMove(start.getAdjacentLocation(dir), arena) && i < 3; i++){
+    public A_Star_Node run(A_Star_Node start, int dir, GameObject[][] arena){
+        for(int i = 0; canMoveAndisValidLocation(start.getAdjacentLocation(dir), arena) && i < 3; i++){
             start = start.getAdjacentLocation(dir);
         }
         return start;
@@ -137,11 +134,21 @@ public class A_star {
         return Math.sqrt(Math.pow(hypotenuse, 2) - Math.pow(arm, 2));
     }
 
+    public boolean canMoveAndisValidLocation(A_Star_Node target, GameObject[][] arena){
+        if(target.isValidLocation()){ // can't call canMove with an invalid location.
+            if(canMove(target, arena)){
+                return true;
+            }
+        }
+        return false;
+    }
     public boolean canMove(A_Star_Node target, GameObject[][] arena) {
         return !isBlock(target, arena) && !isBot(target, arena) && target.isValidLocation();
     }
 
     private boolean isBlock(A_Star_Node loc, GameObject[][] arena) {
+        //System.out.println("loc: " + loc.toString());
+        //System.out.println("arena: " + arena.toString());
         return arena[loc.getRow()][loc.getCol()] instanceof Block;
     }
 
