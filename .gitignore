@@ -10,8 +10,8 @@
 hs_err_pid*
 
 #ant specific
-dist/
-build/
+dist/*
+build/*
 
 #netbeans specific
 core
