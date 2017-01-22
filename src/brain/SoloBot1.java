@@ -41,7 +41,7 @@ public class SoloBot1 extends BotBrain {
                 new A_Star_Node(19, 16), new A_Star_Node(19, 19), new A_Star_Node(16, 19), new A_Star_Node(16, 16),
                 new A_Star_Node(16, 1), new A_Star_Node(19, 1), new A_Star_Node(19, 4), new A_Star_Node(16, 4)));
 
-        algorithm = new A_star();
+        algorithm = new A_star(getColor());
         dest = destinations.remove(0);
     }
 

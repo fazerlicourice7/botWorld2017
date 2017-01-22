@@ -9,7 +9,9 @@ import actor.Block;
 import actor.Bot;
 import actor.BotBrain;
 import actor.GameObject;
+import actor.Marker;
 import grid.Location;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -25,6 +27,11 @@ public class A_star {
     private static final double INFINITY = Double.POSITIVE_INFINITY;
 
     int blockCounter;
+    Color color;
+
+    public A_star(Color color) {
+        this.color = color;
+    }
 
     public int aStar(A_Star_Node start, A_Star_Node dest, GameObject[][] arena) {
         List<A_Star_Node> queue = new ArrayList<>();
@@ -47,7 +54,7 @@ public class A_star {
             if (current.equals(dest)) {
                 return reconstructPath(start, current);
             }
-            
+
             for (int dir = 0; dir < 360; dir += 90) {
                 A_Star_Node temp;
                 if (current.getAdjacentLocation(dir).isValidLocation()) {
@@ -56,7 +63,7 @@ public class A_star {
                     continue;
                 }
                 temp.setPrevious(current);
-                temp.setCostToArrive(current.getCostToArrive() + 1);
+                temp.setCostToArrive(getPathCost(temp, current, arena));
 
                 if (canMove(temp, arena)) {
                     temp.setCostToDest(temp.distanceTo(dest));
@@ -67,18 +74,16 @@ public class A_star {
                 queue.add(temp);
 
                 //===========Run in direction 'dir'===========
-                
-                
                 temp = run(current, dir, arena);
-                if(checked.contains(temp)){
+                if (checked.contains(temp)) {
                     continue;
                 }
                 temp.setPrevious(current);
-                temp.setCostToArrive(current.getCostToArrive() + 1);
+                temp.setCostToArrive(getRunningPathCost(temp, current, arena));
                 temp.setCostToDest(temp.distanceTo(dest));
 
                 queue.add(temp);
-                
+
             }
             blockCounter++;
         }
@@ -98,17 +103,74 @@ public class A_star {
             System.out.println("previous: " + previous.toString());
         }
         //System.out.println("trying to move to: " + previous.toString());
-        if(start.distanceTo(previous) > 1){
+        if (start.distanceTo(previous) > 1) {
             return start.getDirectionToward(previous) + 1000; // runs in the specified direction
         }
         return start.getDirectionToward(previous);
     }
-    
-    public A_Star_Node run(A_Star_Node start, int dir, GameObject[][] arena){
-        for(int i = 0; canMoveAndisValidLocation(start.getAdjacentLocation(dir), arena) && i < 3; i++){
+
+    public A_Star_Node run(A_Star_Node start, int dir, GameObject[][] arena) {
+        for (int i = 0; canMoveAndisValidLocation(start.getAdjacentLocation(dir), arena) && i < 3; i++) {
             start = start.getAdjacentLocation(dir);
         }
         return start;
+    }
+
+    public double getPathCost(A_Star_Node current, A_Star_Node previous, GameObject[][] arena) {
+        double distance = previous.getCostToArrive() + 1;
+        double markerValue = calculateMarkerValue(current, arena);
+        return distance + markerValue;
+    }
+    
+    public double getRunningPathCost(A_Star_Node current, A_Star_Node previous, GameObject[][] arena) {
+        A_Star_Node[] locations = getLocsInBetween(current, previous);
+        double distance = previous.getCostToArrive() + 1;
+        double markerValue = 0;
+        
+        int size = locations.length;
+        for(int locationCounter = 0; locationCounter < size; locationCounter++){
+            markerValue += calculateMarkerValue(locations[locationCounter], arena);
+        }
+        return distance + markerValue;
+    }
+    
+    public double calculateMarkerValue(A_Star_Node current, GameObject[][] arena){ /////===ADD LARGER VALUE TO MARKERS, MARKERS ARE MORE COSTLY/VALUABLE THAN PHYSICAL MOVES
+        if (!isMarker(current, arena)) {
+            return 0;
+        } else if (myMarker(current, arena)) {
+            return +2;
+        } else {
+            return -2;
+        }
+    }
+
+    public boolean isMarker(A_Star_Node loc, GameObject[][] arena) {
+        return arena[loc.getRow()][loc.getCol()] instanceof Marker;
+    }
+
+    public boolean myMarker(A_Star_Node loc, GameObject[][] arena) {
+        if (isMarker(loc, arena)) {
+            Marker marker = (Marker) arena[loc.getRow()][loc.getCol()];
+            if (marker.getColor().equals(this.color)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public A_Star_Node[] getLocsInBetween(A_Star_Node start, A_Star_Node end) {
+        A_Star_Node[] locations = null;
+        if (start.getRow() == end.getRow() || start.getCol() == end.getCol()) {
+            locations = new A_Star_Node[start.distanceTo(end)];
+            int dir = start.getDirectionToward(end);
+            int counter = 0;
+            locations[counter] = start.getAdjacentLocation(dir);
+            while(counter  < start.distanceTo(end) - 1){
+                counter++;
+                locations[counter] = locations[counter - 1].getAdjacentLocation(dir);
+            }
+        }
+        return locations;
     }
 
     public boolean alreadyChecked(List<A_Star_Node> checked, A_Star_Node target) {
@@ -134,15 +196,15 @@ public class A_star {
         return Math.sqrt(Math.pow(hypotenuse, 2) - Math.pow(arm, 2));
     }
 
-    public boolean canMoveAndisValidLocation(A_Star_Node target, GameObject[][] arena){
-        if(target.isValidLocation()){ // can't call canMove with an invalid location.
-            if(canMove(target, arena)){
+    public boolean canMoveAndisValidLocation(A_Star_Node target, GameObject[][] arena) {
+        if (target.isValidLocation()) { // can't call canMove with an invalid location.
+            if (canMove(target, arena)) {
                 return true;
             }
         }
         return false;
     }
-    
+
     public boolean canMove(A_Star_Node target, GameObject[][] arena) {
         return !isBlock(target, arena) && !isBot(target, arena) && target.isValidLocation();
     }
