@@ -1,7 +1,7 @@
 package main;
 
 import brain.RandomRat;
-import brain.SoloBot;
+import brain.SoloBot1;
 import brain.dijkstra;
 import util.PAGuiUtil;
 import util.RatBotManager;
@@ -22,7 +22,7 @@ public class BotWorldRunner
          * This is another place where you can add Bots to the match. 
          * Loading them here will save the time of selecting from the menu.  
          */
-         world.add(new SoloBot());
+         world.add(new SoloBot1());
          
         world.show();
     }

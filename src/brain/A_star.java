@@ -142,17 +142,18 @@ public class A_star {
         }
         return false;
     }
+    
     public boolean canMove(A_Star_Node target, GameObject[][] arena) {
         return !isBlock(target, arena) && !isBot(target, arena) && target.isValidLocation();
     }
 
-    private boolean isBlock(A_Star_Node loc, GameObject[][] arena) {
+    public boolean isBlock(A_Star_Node loc, GameObject[][] arena) {
         //System.out.println("loc: " + loc.toString());
         //System.out.println("arena: " + arena.toString());
         return arena[loc.getRow()][loc.getCol()] instanceof Block;
     }
 
-    private boolean isBot(A_Star_Node loc, GameObject[][] arena) {
+    public boolean isBot(A_Star_Node loc, GameObject[][] arena) {
         return arena[loc.getRow()][loc.getCol()] instanceof Bot;
     }
 }
