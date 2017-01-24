@@ -7,16 +7,12 @@ package brain;
 
 import actor.Block;
 import actor.Bot;
-import actor.BotBrain;
 import actor.GameObject;
 import actor.Marker;
 import grid.Location;
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Random;
 
 /**
  *
@@ -25,6 +21,7 @@ import java.util.Random;
 public class A_star {
 
     private static final double INFINITY = Double.POSITIVE_INFINITY;
+    private static final double DISTANCECOST = 3;
 
     int blockCounter;
     Color color;
@@ -117,30 +114,35 @@ public class A_star {
     }
 
     public double getPathCost(A_Star_Node current, A_Star_Node previous, GameObject[][] arena) {
-        double distance = previous.getCostToArrive() + 1;
-        double markerValue = calculateMarkerValue(current, arena);
+        double distance = previous.getCostToArrive() + DISTANCECOST;
+        double markerValue = calculateMarkerValue(current, arena, -3);
         return distance + markerValue;
     }
-    
+
     public double getRunningPathCost(A_Star_Node current, A_Star_Node previous, GameObject[][] arena) {
         A_Star_Node[] locations = getLocsInBetween(current, previous);
-        double distance = previous.getCostToArrive() + 1;
+        double distance = previous.getCostToArrive() + DISTANCECOST;
         double markerValue = 0;
-        
+
         int size = locations.length;
-        for(int locationCounter = 0; locationCounter < size; locationCounter++){
-            markerValue += calculateMarkerValue(locations[locationCounter], arena);
+        int locCounter = 0;
+        while (locCounter < size - 1) {
+            //Don't reduce cost if the 2 markers that get run over are empty.
+            markerValue += calculateMarkerValue(locations[locCounter], arena, 0);
+            locCounter++;
         }
+        //Reduce cost if the marker we land on is empty.
+        markerValue += calculateMarkerValue(locations[locCounter], arena, -3);
         return distance + markerValue;
     }
-    
-    public double calculateMarkerValue(A_Star_Node current, GameObject[][] arena){ /////===ADD LARGER VALUE TO MARKERS, MARKERS ARE MORE COSTLY/VALUABLE THAN PHYSICAL MOVES
+
+    public double calculateMarkerValue(A_Star_Node current, GameObject[][] arena, double emptyLocValue) { /////===ADD LARGER VALUE TO MARKERS, MARKERS ARE MORE COSTLY/VALUABLE THAN PHYSICAL MOVES
         if (!isMarker(current, arena)) {
-            return 0;
+            return emptyLocValue;
         } else if (myMarker(current, arena)) {
-            return +2;
+            return +4;
         } else {
-            return -2;
+            return -4;
         }
     }
 
@@ -165,7 +167,7 @@ public class A_star {
             int dir = start.getDirectionToward(end);
             int counter = 0;
             locations[counter] = start.getAdjacentLocation(dir);
-            while(counter  < start.distanceTo(end) - 1){
+            while (counter < start.distanceTo(end) - 1) {
                 counter++;
                 locations[counter] = locations[counter - 1].getAdjacentLocation(dir);
             }
