@@ -40,7 +40,7 @@ public class Marker extends GameObject
     public Marker(Marker in)
     {
         super(in);
-        age = 0;
+        age = in.getAge();
         setColor(in.getColor());
     }
     /**
