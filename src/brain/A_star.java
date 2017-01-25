@@ -23,8 +23,9 @@ public class A_star {
     private static final double INFINITY = Double.POSITIVE_INFINITY;
     private static final double DISTANCECOST = 3;
 
-    int blockCounter;
     Color color;
+
+    List<A_Star_Node> checked = new ArrayList<>();
 
     public A_star(Color color) {
         this.color = color;
@@ -32,10 +33,8 @@ public class A_star {
 
     public int aStar(A_Star_Node start, A_Star_Node dest, GameObject[][] arena) {
         List<A_Star_Node> queue = new ArrayList<>();
-        List<A_Star_Node> checked = new ArrayList<>();
-
-        blockCounter = 0;
-
+        checked = new ArrayList<>();
+        
         start.setCostToDest(start.distanceTo(dest));
         queue.add(start);
         while (!queue.isEmpty()) {
@@ -82,9 +81,12 @@ public class A_star {
                 queue.add(temp);
 
             }
-            blockCounter++;
         }
         return -1;
+    }
+    
+    public List<A_Star_Node> getChecked(){
+        return checked;
     }
 
     public int reconstructPath(A_Star_Node start, A_Star_Node current) {

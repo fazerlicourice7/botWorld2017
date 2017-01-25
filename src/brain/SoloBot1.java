@@ -10,10 +10,12 @@ import actor.GameObject;
 import java.util.Random;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
- * This algorithm completes the objective for the single player challenge:
- * to get more than 1.5 million points.
+ * This algorithm completes the objective for the single player challenge: to
+ * get more than 1.5 million points.
+ *
  * @author 18balanagav
  */
 public class SoloBot1 extends BotBrain {
@@ -27,9 +29,12 @@ public class SoloBot1 extends BotBrain {
 
     GameObject[][] arena;
 
+    List<Integer> ACTIONS = new ArrayList<>(Arrays.asList(ACQUIRE, AGE, AGE));
+    List<Integer> actions = new ArrayList<>();
+
     /**
-     * A method that initializes all the necessary instance variables at the start of each round.
-     * It functions as a constructor.
+     * A method that initializes all the necessary instance variables at the
+     * start of each round. It functions as a constructor.
      */
     @Override
     public void initForRound() {
@@ -37,9 +42,13 @@ public class SoloBot1 extends BotBrain {
 
         ran = new Random();
         destinations = new ArrayList<>(Arrays.asList(new A_Star_Node(1, 4), new A_Star_Node(1, 1), new A_Star_Node(4, 1), new A_Star_Node(4, 4),
+                new A_Star_Node(4, 8), new A_Star_Node(1, 8), new A_Star_Node(1, 12), new A_Star_Node(4, 12),
                 new A_Star_Node(1, 16), new A_Star_Node(1, 19), new A_Star_Node(4, 19), new A_Star_Node(4, 16),
+                new A_Star_Node(8, 16), new A_Star_Node(8, 19), new A_Star_Node(12, 19), new A_Star_Node(12, 16),
                 new A_Star_Node(19, 16), new A_Star_Node(19, 19), new A_Star_Node(16, 19), new A_Star_Node(16, 16),
-                new A_Star_Node(16, 1), new A_Star_Node(19, 1), new A_Star_Node(19, 4), new A_Star_Node(16, 4)));
+                new A_Star_Node(16, 12), new A_Star_Node(19, 12), new A_Star_Node(19, 8), new A_Star_Node(16, 8),
+                new A_Star_Node(16, 1), new A_Star_Node(19, 1), new A_Star_Node(19, 4), new A_Star_Node(16, 4),
+                new A_Star_Node(12, 4), new A_Star_Node(12, 1), new A_Star_Node(8, 1), new A_Star_Node(8, 4)));
 
         algorithm = new A_star(getColor());
         dest = destinations.remove(0);
@@ -48,10 +57,14 @@ public class SoloBot1 extends BotBrain {
     /**
      * A method that figures out what to do based on the current situation in
      * the game. It uses the A* algorithm to calculate the shortest path.
-     * @return 
+     *
+     * @return
      */
     @Override
     public int chooseAction() {
+        if(actions.size() > 0){
+            return actions.remove(0);
+        }
         arena = getArena();
         if (getLocation().equals(dest) && !destinations.isEmpty()) {
             do {
@@ -64,7 +77,7 @@ public class SoloBot1 extends BotBrain {
             return ACQUIRE;
         } else if (getLocation().equals(dest) && destinations.isEmpty()) {
             do {
-                dest = new A_Star_Node(ran.nextInt(6) + 7, ran.nextInt(21));
+                dest = new A_Star_Node(ran.nextInt(8) + 6, ran.nextInt(8) + 6);
             } while (!dest.isValidLocation() || algorithm.isBlock(dest, arena) || dest.equals(getLocation()));
             return ACQUIRE;
         }
@@ -73,7 +86,8 @@ public class SoloBot1 extends BotBrain {
 
     /**
      * This method returns this bot's location as an A_Star_Node.
-     * @return 
+     *
+     * @return
      */
     private A_Star_Node getLocation() {
         return new A_Star_Node(getRow(), getCol());
