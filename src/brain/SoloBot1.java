@@ -26,6 +26,8 @@ public class SoloBot1 extends BotBrain {
 
     A_star algorithm;
     Random ran;
+    
+    static boolean SINGLEPLAYER = false, ONEVSONE = false, BATTLEROYALE = false;
 
     ArrayList<A_Star_Node> destinations;
 
@@ -65,6 +67,28 @@ public class SoloBot1 extends BotBrain {
         centerLeft = new ArrayList<>(Arrays.asList(new A_Star_Node(12, 4), new A_Star_Node(12, 1), new A_Star_Node(8, 1), new A_Star_Node(8, 4)));
         centerSquare = new ArrayList<>(Arrays.asList(new A_Star_Node(7, 10), new A_Star_Node(7, 13), new A_Star_Node(10, 13), new A_Star_Node(13, 13), new A_Star_Node(13, 10), new A_Star_Node(13, 7), new A_Star_Node(10, 7), new A_Star_Node(7, 7)));
 
+        if (numberOfBots(arena) == 1){
+            SINGLEPLAYER = true;
+            ONEVSONE = false;
+            BATTLEROYALE = false;
+            initSinglePlayer();
+        } else if(numberOfBots(arena) == 2){
+            SINGLEPLAYER = false;
+            ONEVSONE = true;
+            BATTLEROYALE = false;
+            initOneVOne();
+        } else {
+            SINGLEPLAYER = false;
+            ONEVSONE = false;
+            BATTLEROYALE = true;
+            initBattleRoyale();
+        }        
+
+        algorithm = new A_star(getColor());
+        dest = destinations.remove(0);
+    }
+    
+    public void initSinglePlayer(){
         destinations.addAll(centerSquare);
         destinations.addAll(topLeft);
         destinations.addAll(topCenter);
@@ -74,9 +98,14 @@ public class SoloBot1 extends BotBrain {
         destinations.addAll(bottomCenter);
         destinations.addAll(bottomLeft);
         destinations.addAll(centerLeft);
-
-        algorithm = new A_star(getColor());
-        dest = destinations.remove(0);
+    }
+    
+    public void initOneVOne(){
+        
+    }
+    
+    public void initBattleRoyale(){
+        
     }
 
     /**
@@ -89,14 +118,14 @@ public class SoloBot1 extends BotBrain {
     public int chooseAction() {
         arena = getArena();
 
-        if (numberOfBots(arena) == 1) {
-            return singlePlayerChooseAction();
+        if (SINGLEPLAYER) {
+            return chooseActionSinglePlayer();
         } else {
             return -1;
         }
     }
 
-    public int singlePlayerChooseAction() {
+    public int chooseActionSinglePlayer() {
         if (actions.size() > 0) {
             return actions.remove(0);
         }
@@ -133,6 +162,13 @@ public class SoloBot1 extends BotBrain {
         return algorithm.aStar(getLocation(), dest, arena);
     }
 
+    public int chooseActionOneVOne(){
+        return 0;
+    }
+    
+    public int chooseActionBattleRoyale(){
+        return 0;
+    }
     public boolean acquiredSurrounding(GameObject[][] arena, A_Star_Node loc) {
         for (int dir = 0; dir < 360; dir += 45) {
             if (!algorithm.myMarker(loc.getAdjacentLocation(dir), arena) && !algorithm.isBlock(loc.getAdjacentLocation(dir), arena)) {
