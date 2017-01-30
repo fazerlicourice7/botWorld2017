@@ -34,7 +34,7 @@ public class A_star {
     public int aStar(A_Star_Node start, A_Star_Node dest, GameObject[][] arena) {
         List<A_Star_Node> queue = new ArrayList<>();
         checked = new ArrayList<>();
-        
+
         start.setCostToDest(start.distanceTo(dest));
         queue.add(start);
         while (!queue.isEmpty()) {
@@ -59,12 +59,13 @@ public class A_star {
                     continue;
                 }
                 temp.setPrevious(current);
-                temp.setCostToArrive(getPathCost(temp, current, arena));
 
                 if (canMove(temp, arena)) {
                     temp.setCostToDest(temp.distanceTo(dest));
+                    temp.setCostToArrive(getPathCost(temp, current, arena));
                 } else {
                     temp.setCostToDest(INFINITY);
+                    temp.setCostToArrive(INFINITY);
                 }
 
                 queue.add(temp);
@@ -82,10 +83,11 @@ public class A_star {
 
             }
         }
+        System.out.println("returning -1");
         return -1;
     }
-    
-    public List<A_Star_Node> getChecked(){
+
+    public List<A_Star_Node> getChecked() {
         return checked;
     }
 
@@ -138,7 +140,7 @@ public class A_star {
         return distance + markerValue;
     }
 
-    public double calculateMarkerValue(A_Star_Node current, GameObject[][] arena, double emptyLocValue) { /////===ADD LARGER VALUE TO MARKERS, MARKERS ARE MORE COSTLY/VALUABLE THAN PHYSICAL MOVES
+    public double calculateMarkerValue(A_Star_Node current, GameObject[][] arena, double emptyLocValue) {
         if (!isMarker(current, arena)) {
             return emptyLocValue;
         } else if (myMarker(current, arena)) {
@@ -214,8 +216,6 @@ public class A_star {
     }
 
     public boolean isBlock(A_Star_Node loc, GameObject[][] arena) {
-        //System.out.println("loc: " + loc.toString());
-        //System.out.println("arena: " + arena.toString());
         return arena[loc.getRow()][loc.getCol()] instanceof Block;
     }
 

@@ -34,7 +34,7 @@ public class Bot extends GameObject
     {
         botBrain = new BotBrain();
         setColor(Color.RED);
-        initialize();
+        clearScores();
     }
     /**
      * Constructs a Rat with the given color and given BotBrain for its 'brain'.
@@ -53,7 +53,7 @@ public class Bot extends GameObject
 //        }
 //        else    
 //            setColor(rb.getPreferredColor());
-        initialize();
+        clearScores();
     }
     /**
      * Constructs a copy of this Rat (that does not include the BotBrain.)
