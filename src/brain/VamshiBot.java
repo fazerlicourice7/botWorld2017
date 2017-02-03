@@ -232,13 +232,39 @@ public class VamshiBot extends BotBrain {
         //========= IF BLOCKED IN ========
         if (algorithm.aStar(getLocation(), centerTest, arena) == -1) {
             setName("Single Player - blocked in");
-            if (!initializedSinglePlayer) {
-                initSinglePlayer();
-                initializedSinglePlayer = true;
+            int sect = getSector(arena, getLocation());
+            switch (sect) {
+                case 1:
+                    destinations.addAll(0, topRight);
+                    break;
+                case 2:
+                    destinations.addAll(0, topLeft);
+                    break;
+                case 3:
+                    destinations.addAll(0, bottomLeft);
+                    break;
+                case 4:
+                    destinations.addAll(0, bottomRight);
+                    break;
+                case 5:
+                    destinations.addAll(0, centerRight);
+                    break;
+                case 6:
+                    destinations.addAll(0, topCenter);
+                    break;
+                case 7:
+                    destinations.addAll(0, centerLeft);
+                    break;
+                case 8:
+                    destinations.addAll(0, bottomCenter);
+                    break;
+                default:
+                    break;
             }
             dest = getDestination();
             return chooseActionSinglePlayer();
         }
+
         setName("not blocked in");
         //======= BLOCK OTHER BOT IN CORNER ==========
         CORNER = isBotInCorner(arena);
@@ -287,11 +313,11 @@ public class VamshiBot extends BotBrain {
             }
 
             temp = dest;
-            ArrayList<Bot> bots = getBots(arena);
-            for (Bot b : bots) {
-                if (b.getColor() != getColor()) {
-                    A_Star_Node botLoc = new A_Star_Node(b.getRow(), b.getCol());
-                    if (algorithm.aStar(botLoc, centerTest, arena) != -1) {
+            if (CORNER == 1464) {
+                ArrayList<Bot> bots = getBots(arena);
+                for (Bot b : bots) {
+                    if (b.getColor() != getColor()) {
+                        A_Star_Node botLoc = new A_Star_Node(b.getRow(), b.getCol());
                         do {
                             dest = botLoc.getAdjacentLocation(ran.nextInt(3) * 90);
                         } while (!dest.isValidLocation());
@@ -412,8 +438,6 @@ public class VamshiBot extends BotBrain {
      */
     public A_Star_Node getDestination() {
         A_Star_Node d = new A_Star_Node(0, 0);
-        //System.out.println("current loc: " + getLocation().toString());
-        //System.out.println("current dest: " + dest.toString());
         do {
             try {
                 d = destinations.remove(0);
@@ -421,8 +445,29 @@ public class VamshiBot extends BotBrain {
                 d = new A_Star_Node(ran.nextInt(8) + 6, ran.nextInt(8) + 6);
             }
         } while (algorithm.isBlock(d, arena));
-        //System.out.println("new destination: " + d.toString());
         return d;
+    }
+
+    public int getSector(GameObject[][] arena, A_Star_Node myLoc) {
+        if (myLoc.getRow() < 6 && myLoc.getCol() > 14) {
+            return 1;
+        } else if (myLoc.getRow() < 6 && myLoc.getCol() < 6) {
+            return 2;
+        } else if (myLoc.getRow() > 14 && myLoc.getCol() < 6) {
+            return 3;
+        } else if (myLoc.getRow() > 14 && myLoc.getCol() > 14) {
+            return 4;
+        } else if (myLoc.getRow() < 14 && myLoc.getRow() > 6 && myLoc.getCol() > 15) {
+            return 5;
+        } else if (myLoc.getRow() < 5 && myLoc.getCol() > 6 && myLoc.getCol() < 14) {
+            return 6;
+        } else if (myLoc.getRow() < 14 && myLoc.getRow() > 6 && myLoc.getCol() < 5) {
+            return 7;
+        } else if (myLoc.getRow() > 15 && myLoc.getCol() > 6 && myLoc.getCol() < 14) {
+            return 8;
+        } else {
+            return 0;
+        }
     }
 
     /**
@@ -731,10 +776,14 @@ class A_star {
     public double calculateMarkerValue(A_Star_Node current, GameObject[][] arena, double emptyLocValue) {
         if (!isMarker(current, arena)) {
             return emptyLocValue;
-        } else if (myMarker(current, arena)) {
-            return +4;
         } else {
-            return -4;
+            Marker m = (Marker) arena[current.getRow()][current.getCol()];
+
+            if (myMarker(current, arena)) {
+                return +4 + (m.getAge() / 250);
+            } else {
+                return -4 - (m.getAge() / 250);
+            }
         }
     }
 

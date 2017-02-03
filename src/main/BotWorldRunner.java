@@ -26,6 +26,13 @@ public class BotWorldRunner
          * Loading them here will save the time of selecting from the menu.  
          */
         world.add(new RandomRat());
+                world.add(new RandomRat());
+        world.add(new RandomRat());
+        world.add(new RandomRat());
+        world.add(new RandomRat());
+        world.add(new RandomRat());
+        world.add(new RandomRat());
+
         world.add(new VamshiBot());
          
         world.show();
