@@ -229,40 +229,54 @@ public class VamshiBot extends BotBrain {
      */
     public int chooseActionOneVOne() {
 
+        // ======== IF ALL CORNERS BLOCKED ===========
+        if (algorithm.isBlock(topRightBlock, arena) && algorithm.isBlock(topLeftBlock, arena)
+                && algorithm.isBlock(bottomRightBlock, arena) && algorithm.isBlock(bottomLeftBlock, arena)) {
+            BATTLEROYALE = true;
+            ONEVSONE = false;
+        }
+
         //========= IF BLOCKED IN ========
         if (algorithm.aStar(getLocation(), centerTest, arena) == -1) {
             setName("Single Player - blocked in");
-            int sect = getSector(arena, getLocation());
-            switch (sect) {
-                case 1:
-                    destinations.addAll(0, topRight);
-                    break;
-                case 2:
-                    destinations.addAll(0, topLeft);
-                    break;
-                case 3:
-                    destinations.addAll(0, bottomLeft);
-                    break;
-                case 4:
-                    destinations.addAll(0, bottomRight);
-                    break;
-                case 5:
-                    destinations.addAll(0, centerRight);
-                    break;
-                case 6:
-                    destinations.addAll(0, topCenter);
-                    break;
-                case 7:
-                    destinations.addAll(0, centerLeft);
-                    break;
-                case 8:
-                    destinations.addAll(0, bottomCenter);
-                    break;
-                default:
-                    break;
+
+            if (!acquiredSurrounding(arena, getLocation())) {
+                return ACQUIRE;
+            } else {
+                return AGE;
             }
-            dest = getDestination();
-            return chooseActionSinglePlayer();
+
+            /*int sect = getSector(arena, getLocation());
+             switch (sect) {
+             case 1:
+             destinations.addAll(0, topRight);
+             break;
+             case 2:
+             destinations.addAll(0, topLeft);
+             break;
+             case 3:
+             destinations.addAll(0, bottomLeft);
+             break;
+             case 4:
+             destinations.addAll(0, bottomRight);
+             break;
+             case 5:
+             destinations.addAll(0, centerRight);
+             break;
+             case 6:
+             destinations.addAll(0, topCenter);
+             break;
+             case 7:
+             destinations.addAll(0, centerLeft);
+             break;
+             case 8:
+             destinations.addAll(0, bottomCenter);
+             break;
+             default:
+             break;
+             }
+             dest = getDestination();
+             return chooseActionSinglePlayer(); */
         }
 
         setName("not blocked in");
@@ -313,7 +327,7 @@ public class VamshiBot extends BotBrain {
             }
 
             temp = dest;
-            if (CORNER == 1464) {
+            if (CORNER != 1464) {
                 ArrayList<Bot> bots = getBots(arena);
                 for (Bot b : bots) {
                     if (b.getColor() != getColor()) {
