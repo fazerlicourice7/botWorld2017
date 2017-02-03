@@ -1,5 +1,7 @@
 package main;
 
+import brain.AaribWall;
+import brain.JannBot;
 import brain.RandomRat;
 import brain.VamshiBot;
 import brain.dijkstra;
@@ -23,8 +25,8 @@ public class BotWorldRunner
          * This is another place where you can add Bots to the match. 
          * Loading them here will save the time of selecting from the menu.  
          */
-        //world.add(new VamshiBot());
-        //world.add(new testBot());
+        world.add(new RandomRat());
+        world.add(new VamshiBot());
          
         world.show();
     }

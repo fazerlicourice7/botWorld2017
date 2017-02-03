@@ -22,10 +22,10 @@ import static grid.Location.SOUTHEAST;
 import static grid.Location.SOUTHWEST;
 import static grid.Location.WEST;
 import java.awt.Color;
-import java.util.Random;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 /**
  * This file contains the logic for my bot for all 3 game modes.
@@ -39,10 +39,11 @@ public class VamshiBot extends BotBrain {
     A_star algorithm;
     Random ran;
 
-    int WAITFORCORNER = 0; // number of moves I wait for a bot to move from one of 
-    // the corner locations, if it doesn't move after 10 
-    //moves, I move on.
+    boolean initializedSinglePlayer = false;
 
+    int notGoingToUse;
+
+    A_Star_Node temp;
     static int CORNER = 0;
     static boolean SINGLEPLAYER = false, ONEVSONE = false, BATTLEROYALE = false;
 
@@ -60,20 +61,17 @@ public class VamshiBot extends BotBrain {
 
     ArrayList<A_Star_Node> destinations;
 
-    ArrayList<A_Star_Node> topLeft;
-    ArrayList<A_Star_Node> topCenter;
-    ArrayList<A_Star_Node> topRight;
-    ArrayList<A_Star_Node> centerRight;
-    ArrayList<A_Star_Node> bottomRight;
-    ArrayList<A_Star_Node> bottomCenter;
-    ArrayList<A_Star_Node> bottomLeft;
-    ArrayList<A_Star_Node> centerLeft;
-    ArrayList<A_Star_Node> centerSquare;
+    ArrayList<A_Star_Node> topLeft = new ArrayList<>(Arrays.asList(new A_Star_Node(1, 4), new A_Star_Node(1, 1), new A_Star_Node(4, 1), new A_Star_Node(4, 4)));
+    ArrayList<A_Star_Node> topCenter = new ArrayList<>(Arrays.asList(new A_Star_Node(4, 8), new A_Star_Node(1, 8), new A_Star_Node(1, 12), new A_Star_Node(4, 12)));
+    ArrayList<A_Star_Node> topRight = new ArrayList<>(Arrays.asList(new A_Star_Node(1, 16), new A_Star_Node(1, 19), new A_Star_Node(4, 19), new A_Star_Node(4, 16)));
+    ArrayList<A_Star_Node> centerRight = new ArrayList<>(Arrays.asList(new A_Star_Node(8, 16), new A_Star_Node(8, 19), new A_Star_Node(12, 19), new A_Star_Node(12, 16)));
+    ArrayList<A_Star_Node> bottomRight = new ArrayList<>(Arrays.asList(new A_Star_Node(19, 16), new A_Star_Node(19, 19), new A_Star_Node(16, 19), new A_Star_Node(16, 16)));
+    ArrayList<A_Star_Node> bottomCenter = new ArrayList<>(Arrays.asList(new A_Star_Node(16, 12), new A_Star_Node(19, 12), new A_Star_Node(19, 8), new A_Star_Node(16, 8)));
+    ArrayList<A_Star_Node> bottomLeft = new ArrayList<>(Arrays.asList(new A_Star_Node(16, 1), new A_Star_Node(19, 1), new A_Star_Node(19, 4), new A_Star_Node(16, 4)));
+    ArrayList<A_Star_Node> centerLeft = new ArrayList<>(Arrays.asList(new A_Star_Node(12, 4), new A_Star_Node(12, 1), new A_Star_Node(8, 1), new A_Star_Node(8, 4)));
+    ArrayList<A_Star_Node> centerSquare = new ArrayList<>(Arrays.asList(new A_Star_Node(7, 10), new A_Star_Node(7, 13), new A_Star_Node(10, 13), new A_Star_Node(13, 13), new A_Star_Node(13, 10), new A_Star_Node(13, 7), new A_Star_Node(10, 7), new A_Star_Node(7, 7)));
 
     GameObject[][] arena;
-
-    List<Integer> ACTIONS = new ArrayList<>(Arrays.asList(ACQUIRE, AGE, AGE));
-    List<Integer> actions = new ArrayList<>();
 
     /**
      * A method that initializes all the necessary instance variables at the
@@ -88,38 +86,8 @@ public class VamshiBot extends BotBrain {
         ran = new Random();
         destinations = new ArrayList<>();
 
-        topLeft = new ArrayList<>(Arrays.asList(new A_Star_Node(1, 4), new A_Star_Node(1, 1), new A_Star_Node(4, 1), new A_Star_Node(4, 4)));
-        topCenter = new ArrayList<>(Arrays.asList(new A_Star_Node(4, 8), new A_Star_Node(1, 8), new A_Star_Node(1, 12), new A_Star_Node(4, 12)));
-        topRight = new ArrayList<>(Arrays.asList(new A_Star_Node(1, 16), new A_Star_Node(1, 19), new A_Star_Node(4, 19), new A_Star_Node(4, 16)));
-        centerRight = new ArrayList<>(Arrays.asList(new A_Star_Node(8, 16), new A_Star_Node(8, 19), new A_Star_Node(12, 19), new A_Star_Node(12, 16)));
-        bottomRight = new ArrayList<>(Arrays.asList(new A_Star_Node(19, 16), new A_Star_Node(19, 19), new A_Star_Node(16, 19), new A_Star_Node(16, 16)));
-        bottomCenter = new ArrayList<>(Arrays.asList(new A_Star_Node(16, 12), new A_Star_Node(19, 12), new A_Star_Node(19, 8), new A_Star_Node(16, 8)));
-        bottomLeft = new ArrayList<>(Arrays.asList(new A_Star_Node(16, 1), new A_Star_Node(19, 1), new A_Star_Node(19, 4), new A_Star_Node(16, 4)));
-        centerLeft = new ArrayList<>(Arrays.asList(new A_Star_Node(12, 4), new A_Star_Node(12, 1), new A_Star_Node(8, 1), new A_Star_Node(8, 4)));
-        centerSquare = new ArrayList<>(Arrays.asList(new A_Star_Node(7, 10), new A_Star_Node(7, 13), new A_Star_Node(10, 13), new A_Star_Node(13, 13), new A_Star_Node(13, 10), new A_Star_Node(13, 7), new A_Star_Node(10, 7), new A_Star_Node(7, 7)));
-
-        /*if (numberOfBots(arena) == 1) {
-         SINGLEPLAYER = true;
-         ONEVSONE = false;
-         BATTLEROYALE = false;
-         initSinglePlayer();
-         } else if (numberOfBots(arena) == 2) {
-         SINGLEPLAYER = false;
-         ONEVSONE = true;
-         BATTLEROYALE = false;
-         initOneVOne();
-         } else {
-         SINGLEPLAYER = false;
-         ONEVSONE = false;
-         BATTLEROYALE = true;
-         initBattleRoyale();
-         }
-         SINGLEPLAYER = true;
-         initSinglePlayer();*/
         centerTest = new A_Star_Node(ran.nextInt(8) + 6, ran.nextInt(8) + 6);
-        System.out.println("centerTest: " + centerTest.toString());
         algorithm = new A_star(getColor());
-        //dest = destinations.remove(0);
     }
 
     /**
@@ -141,6 +109,7 @@ public class VamshiBot extends BotBrain {
      * Initializes the list of destinations for multiple bots.
      */
     public void initOneVOne() {
+        initializedSinglePlayer = false;
         destinations.addAll(centerSquare);
         destinations.addAll(topCenter);
         destinations.addAll(centerRight);
@@ -152,8 +121,15 @@ public class VamshiBot extends BotBrain {
         destinations.addAll(topRight);
     }
 
+    /**
+     *
+     */
     public void initBattleRoyale() {
-
+        destinations.addAll(centerSquare);
+        destinations.addAll(topCenter);
+        destinations.addAll(centerRight);
+        destinations.addAll(bottomCenter);
+        destinations.addAll(centerLeft);
     }
 
     /**
@@ -165,22 +141,27 @@ public class VamshiBot extends BotBrain {
     @Override
     public int chooseAction() {
         arena = getArena();
+
         if (getMoveNumber() == 1) {
-            if (numberOfBots(arena) == 1) {
-                SINGLEPLAYER = true;
-                ONEVSONE = false;
-                BATTLEROYALE = false;
-                initSinglePlayer();
-            } else if (numberOfBots(arena) > 1) { //========FIX THIS LATER!!!!
-                SINGLEPLAYER = false;
-                ONEVSONE = true;
-                BATTLEROYALE = false;
-                initOneVOne();
-            } else {
-                SINGLEPLAYER = false;
-                ONEVSONE = false;
-                BATTLEROYALE = true;
-                initBattleRoyale();
+            switch (numberOfBots(arena)) {
+                case 1: // Single Player
+                    SINGLEPLAYER = true;
+                    ONEVSONE = false;
+                    BATTLEROYALE = false;
+                    initSinglePlayer();
+                    break;
+                case 2: // One V One
+                    SINGLEPLAYER = false;
+                    ONEVSONE = true;
+                    BATTLEROYALE = false;
+                    initOneVOne();
+                    break;
+                default: // Battle Royale
+                    SINGLEPLAYER = false;
+                    ONEVSONE = false;
+                    BATTLEROYALE = true;
+                    initBattleRoyale();
+                    break;
             }
             dest = destinations.remove(0);
         }
@@ -205,9 +186,6 @@ public class VamshiBot extends BotBrain {
      * @return
      */
     public int chooseActionSinglePlayer() {
-        if (actions.size() > 0) {
-            return actions.remove(0);
-        }
 
         if (getLocation().equals(dest) && !destinations.isEmpty()) {
             dest = getDestination();
@@ -217,13 +195,9 @@ public class VamshiBot extends BotBrain {
                 if (!surroundingMaxAged(getLocation(), arena)) {
                     return AGE;
                 } else {
-                    A_Star_Node possibleDest = algorithm.run(getLocation(), 90, arena);
-                    if (possibleDest.distanceTo(getLocation()) == 3) {
-                        dest = possibleDest;
-                        return 1090;
-                    } else {
-                        dest = algorithm.run(getLocation(), 0, arena);
-                        return 1270;
+                    dest = algorithm.run(getLocation(), ran.nextInt(3) * 90, arena);
+                    while (getLocation().distanceTo(dest) < 3) {
+                        dest = algorithm.run(getLocation(), ran.nextInt(3) * 90, arena);
                     }
                 }
             } else {
@@ -239,6 +213,9 @@ public class VamshiBot extends BotBrain {
             counter++;
         }
         if (counter == 5) {
+            if (!acquiredSurrounding(arena, getLocation())) {
+                return ACQUIRE;
+            }
             return AGE;
         }
         return returnValue;
@@ -251,133 +228,181 @@ public class VamshiBot extends BotBrain {
      * @return
      */
     public int chooseActionOneVOne() {
+
+        //========= IF BLOCKED IN ========
         if (algorithm.aStar(getLocation(), centerTest, arena) == -1) {
-            //System.out.println("centerTest: " + centerTest.toString());
             setName("Single Player - blocked in");
-            /*SINGLEPLAYER = true;
-             ONEVSONE = false;*/
-            initSinglePlayer();
-            dest = destinations.remove(0);
+            if (!initializedSinglePlayer) {
+                initSinglePlayer();
+                initializedSinglePlayer = true;
+            }
+            dest = getDestination();
             return chooseActionSinglePlayer();
         }
         setName("not blocked in");
-
+        //======= BLOCK OTHER BOT IN CORNER ==========
         CORNER = isBotInCorner(arena);
-        RESTART: // All the code relating to blocking a bot in is inside this block
-        {        // if it gets run again, with a CORNER value that is not 1,2,3 or 4
-            // none of this code will be executed, and the program will continue
-            // to find a new destination.
-            setName("corner: " + CORNER);
-            if ((getLocation().equals(topRightSpot) && dest.equals(topRightSpot) && CORNER == 1)
-                    || (getLocation().equals(topLeftSpot) && dest.equals(topLeftSpot) && CORNER == 2)) {
-                //System.out.println("putting a block north");
-                if (algorithm.isBot(topRightBlock, arena) || algorithm.isBot(topLeftBlock, arena)) {
-                    if (WAITFORCORNER == 10) {
-                        WAITFORCORNER = 0;
-                        // set corner = 0 and restart this if/ else if block.
-                        // will skip all the if statements about corner trapping.
-                        CORNER = 0;
-                        break RESTART;
-                    } else {
-                        WAITFORCORNER++;
-                    }
-                }
-                return BLOCK_NORTH;
-            } else if ((getLocation().equals(bottomLeftSpot) && dest.equals(bottomLeftSpot) && CORNER == 3)
-                    || (getLocation().equals(bottomRightSpot) && dest.equals(bottomRightSpot) && CORNER == 4)) {
-                //System.out.println("putting a block south");
-                if (algorithm.isBot(bottomRightBlock, arena)
-                        || algorithm.isBot(bottomLeftBlock, arena)) {
-                    if (WAITFORCORNER == 10) {
-                        WAITFORCORNER = 0;
-                        // set corner = 0 and restart this if/ else if block.
-                        // will skip all the if statements about corner trapping.
-                        CORNER = 0;
-                        break RESTART;
-                    } else {
-                        WAITFORCORNER++;
-                    }
-                }
-                return BLOCK_SOUTH;
-            }
-            A_Star_Node temp = dest;
-            if (CORNER == 1) {
-                dest = topRightSpot;
-                //System.out.println("dest: " + dest.toString() + ", temp: " + temp.toString());
-                if (!temp.equals(dest)) {
-                    destinations.add(0, temp);
-                }
-            } else if (CORNER == 2) {
-                dest = topLeftSpot;
-                //System.out.println("dest: " + dest.toString() + ", temp: " + temp.toString());
-                if (!temp.equals(dest)) {
-                    destinations.add(0, temp);
-                }
-            } else if (CORNER == 3) {
-                dest = bottomLeftSpot;
-                //System.out.println("dest: " + dest.toString() + ", temp: " + temp.toString());
-                if (!temp.equals(dest)) {
-                    destinations.add(0, temp);
-                }
-            } else if (CORNER == 4) {
-                dest = bottomRightSpot;
-                //System.out.println("dest: " + dest.toString() + ", temp: " + temp.toString());
-                if (!temp.equals(dest)) {
-                    destinations.add(0, temp);
-                }
-            }
+
+        setName("corner: " + CORNER);
+        if ((getLocation().equals(topRightSpot) && dest.equals(topRightSpot) && CORNER == 1)
+                || (getLocation().equals(topLeftSpot) && dest.equals(topLeftSpot) && CORNER == 2)) {
+            return BLOCK_NORTH;
+        } else if ((getLocation().equals(bottomLeftSpot) && dest.equals(bottomLeftSpot) && CORNER == 3)
+                || (getLocation().equals(bottomRightSpot) && dest.equals(bottomRightSpot) && CORNER == 4)) {
+            return BLOCK_SOUTH;
         }
 
+        temp = dest;
+        switch (CORNER) {
+            case 1:
+                dest = topRightSpot;
+                break;
+            case 2:
+                dest = topLeftSpot;
+                break;
+            case 3:
+                dest = bottomLeftSpot;
+                break;
+            case 4:
+                dest = bottomRightSpot;
+                break;
+            default:
+                break;
+        }
+        if (!temp.equals(dest)) {
+            destinations.add(0, temp);
+        }
+
+        //======== GET THE NEXT DESTINATION ============
         if (getLocation().equals(dest) && !destinations.isEmpty()) {
             dest = getDestination();
-            //System.out.println("location equals dest, dest not empty");
-            //System.out.println("dest: " + dest.toString());
-            return ACQUIRE;
-        } else if (getLocation().equals(dest) && destinations.isEmpty()) {
-            //dest = getDestination();
-            //System.out.println("dest: " + destinations.toString());
-            //System.out.println("destinations is empty");
+
             if (!acquiredSurrounding(arena, getLocation())) {
-                //dest = getDestination();
                 return ACQUIRE;
             }
 
-            A_Star_Node temp = dest;
+        } else if (getLocation().equals(dest) && destinations.isEmpty()) {
+            if (!acquiredSurrounding(arena, getLocation())) {
+                return ACQUIRE;
+            }
+
+            temp = dest;
             ArrayList<Bot> bots = getBots(arena);
             for (Bot b : bots) {
                 if (b.getColor() != getColor()) {
                     A_Star_Node botLoc = new A_Star_Node(b.getRow(), b.getCol());
                     if (algorithm.aStar(botLoc, centerTest, arena) != -1) {
-                        dest = botLoc;
+                        do {
+                            dest = botLoc.getAdjacentLocation(ran.nextInt(3) * 90);
+                        } while (!dest.isValidLocation());
                     }
                 }
             }
-            if (dest.equals(temp)) {
+
+            if (dest.equals(temp) || dest.equals(getLocation())
+                    || dest.distanceTo(getLocation()) < 2) {
                 return AGE;
             }
-
         }
 
-        if (algorithm.isBot(dest, arena)) {
-            A_Star_Node temp = dest;
+        while (algorithm.isBot(dest, arena)) {
+            temp = dest;
             dest = getDestination();
             destinations.add(0, temp);
         }
 
+        //======= RUN A*============
         int returnValue = algorithm.aStar(getLocation(), dest, arena);
-        
-        if (returnValue == -1) {
+        int counter = 0;
+        while (returnValue == -1 && counter < 5) {
             dest = getDestination();
-            return AGE;
-            //returnValue = algorithm.aStar(getLocation(), dest, arena);
+            returnValue = algorithm.aStar(getLocation(), dest, arena);
+            counter++;
         }
-
-        //System.out.println("dest: " + dest.toString());
+        if (counter == 5) {
+            if (!acquiredSurrounding(arena, getLocation())) {
+                return ACQUIRE;
+            }
+            return AGE;
+        }
         return returnValue;
     }
 
+    /**
+     *
+     * @return
+     */
     public int chooseActionBattleRoyale() {
-        return 0;
+
+        // =========== IF BLOCKED IN =========
+        if (algorithm.aStar(getLocation(), centerTest, arena) == -1) {
+            setName("Single Player - blocked in");
+            if (!initializedSinglePlayer) {
+                initSinglePlayer();
+                initializedSinglePlayer = true;
+            }
+            dest = getDestination();
+            return chooseActionSinglePlayer();
+        }
+
+        // ========= BLOCK OTHER BOTS IN =============
+        CORNER = isBotInCorner(arena);
+
+        if ((getLocation().equals(topRightSpot) && dest.equals(topRightSpot) && CORNER == 1)
+                || (getLocation().equals(topLeftSpot) && dest.equals(topLeftSpot) && CORNER == 2)) {
+            return BLOCK_NORTH;
+        } else if ((getLocation().equals(bottomLeftSpot) && dest.equals(bottomLeftSpot) && CORNER == 3)
+                || (getLocation().equals(bottomRightSpot) && dest.equals(bottomRightSpot) && CORNER == 4)) {
+            return BLOCK_SOUTH;
+        }
+        setName("corner: " + CORNER);
+        temp = dest;
+        switch (CORNER) {
+            case 1:
+                dest = topRightSpot;
+                break;
+            case 2:
+                dest = topLeftSpot;
+                break;
+            case 3:
+                dest = bottomLeftSpot;
+                break;
+            case 4:
+                dest = bottomRightSpot;
+                break;
+            default:
+                break;
+        }
+        if (!temp.equals(dest)) {
+            destinations.add(0, temp);
+        }
+        //======GO TO DESTINATIONS======
+
+        if (getLocation().equals(dest) && !destinations.isEmpty()) {
+            dest = getDestination();
+            return ACQUIRE;
+        } else if (getLocation().equals(dest) && destinations.isEmpty()) {
+            initBattleRoyale();
+            if (!acquiredSurrounding(arena, getLocation())) {
+                return ACQUIRE;
+            }
+        }
+
+        //===== RUN A* ===========
+        int returnValue = algorithm.aStar(getLocation(), dest, arena);
+        int counter = 0;
+        while (returnValue == -1 && counter < 5) {
+            dest = getDestination();
+            returnValue = algorithm.aStar(getLocation(), dest, arena);
+            counter++;
+        }
+        if (counter == 5) {
+            if (!acquiredSurrounding(arena, getLocation())) {
+                return ACQUIRE;
+            }
+            return AGE;
+        }
+        return returnValue;
     }
 
     /**
@@ -393,7 +418,7 @@ public class VamshiBot extends BotBrain {
             try {
                 d = destinations.remove(0);
             } catch (IndexOutOfBoundsException ex) {
-                //d = new A_Star_Node(ran.nextInt(6) + 7, ran.nextInt(21));
+                d = new A_Star_Node(ran.nextInt(8) + 6, ran.nextInt(8) + 6);
             }
         } while (algorithm.isBlock(d, arena));
         //System.out.println("new destination: " + d.toString());
@@ -605,7 +630,6 @@ class A_star {
 
             }
         }
-        //System.out.println("returning -1, start: " + start.toString() + " dest: " + dest.toString());
         return -1;
     }
 
@@ -627,17 +651,14 @@ class A_star {
      */
     public int reconstructPath(A_Star_Node start, A_Star_Node current) {
         A_Star_Node previous = current;
-        //System.out.println("dest: " + current.toString());
         try {
             while (!previous.getPrevious().equals(start)) {
-                //System.out.println("path: " + previous.toString());
                 previous = previous.getPrevious();
             }
         } catch (NullPointerException n) {
-            //System.out.println("start: " + start.toString());
-            //System.out.println("previous: " + previous.toString());
+
         }
-        //System.out.println("trying to move to: " + previous.toString());
+
         if (start.distanceTo(previous) > 1) {
             return start.getDirectionToward(previous) + 1000; // runs in the specified direction
         }
@@ -660,7 +681,7 @@ class A_star {
     }
 
     /**
-     * Calculate the cost of moving to the given Node from the prevous node.
+     * Calculate the cost of moving to the given Node from the previous node.
      *
      * @param current
      * @param previous
@@ -779,41 +800,6 @@ class A_star {
             }
         }
         return false;
-    }
-
-    /**
-     * DEPRECATED Uses the pythagorean theorem to calculate a simple heuristic.
-     * Now I use the distanceTo method as a heuristic.
-     *
-     * @param current
-     * @param dest
-     * @return
-     */
-    public double basicHeuristic(A_Star_Node current, A_Star_Node dest) {
-        int deltaRow = Math.abs(current.getRow() - dest.getRow());
-        int deltaCol = Math.abs(current.getCol() - dest.getCol());
-        return pythagorean(deltaRow, deltaCol);
-    }
-
-    /**
-     *
-     * @param arm1
-     * @param arm2
-     * @return the value of the hypotenuse of a right triangle with the given
-     * arm lengths.
-     */
-    public double pythagorean(int arm1, int arm2) {
-        return Math.sqrt(Math.pow(arm1, 2) + Math.pow(arm2, 2));
-    }
-
-    /**
-     * @param hypotenuse
-     * @param arm
-     * @return finds the value of an arm of a right triangle given the
-     * hypotenuse and one arm.
-     */
-    public double invPythagorean(int hypotenuse, int arm) {
-        return Math.sqrt(Math.pow(hypotenuse, 2) - Math.pow(arm, 2));
     }
 
     /**
@@ -970,26 +956,37 @@ class A_Star_Node extends Location {
         adjustedDirection = (adjustedDirection / HALF_RIGHT) * HALF_RIGHT;
         int dc = 0;
         int dr = 0;
-        if (adjustedDirection == EAST) {
-            dc = 1;
-        } else if (adjustedDirection == SOUTHEAST) {
-            dc = 1;
-            dr = 1;
-        } else if (adjustedDirection == SOUTH) {
-            dr = 1;
-        } else if (adjustedDirection == SOUTHWEST) {
-            dc = -1;
-            dr = 1;
-        } else if (adjustedDirection == WEST) {
-            dc = -1;
-        } else if (adjustedDirection == NORTHWEST) {
-            dc = -1;
-            dr = -1;
-        } else if (adjustedDirection == NORTH) {
-            dr = -1;
-        } else if (adjustedDirection == NORTHEAST) {
-            dc = 1;
-            dr = -1;
+        switch (adjustedDirection) {
+            case EAST:
+                dc = 1;
+                break;
+            case SOUTHEAST:
+                dc = 1;
+                dr = 1;
+                break;
+            case SOUTH:
+                dr = 1;
+                break;
+            case SOUTHWEST:
+                dc = -1;
+                dr = 1;
+                break;
+            case WEST:
+                dc = -1;
+                break;
+            case NORTHWEST:
+                dc = -1;
+                dr = -1;
+                break;
+            case NORTH:
+                dr = -1;
+                break;
+            case NORTHEAST:
+                dc = 1;
+                dr = -1;
+                break;
+            default:
+                break;
         }
         return new A_Star_Node(getRow() + dr, getCol() + dc);
     }
